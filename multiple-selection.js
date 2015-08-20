@@ -121,7 +121,7 @@ angular.module('multipleSelection', [])
             scope.mouseDown = false;
             scope.linkTriggered = false;
             ctrls[0].setSelected(ctrls[1].$modelValue);
-            console.log('allselected', ctrls[0].allSelected);
+            //console.log('allselected', ctrls[0].allSelected);
           }
 
           //event.stopImmediatePropagation();
@@ -405,7 +405,7 @@ angular.module('multipleSelection', [])
                }*/
             }
           }
-          console.log('all sel', ctrl.allSelected);
+          //console.log('all sel', ctrl.allSelected);
 
           // Remove listeners
           $document.off('mousemove.multi-select', mousemove);
