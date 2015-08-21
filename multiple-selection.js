@@ -404,7 +404,7 @@ angular.module('multipleSelection', [])
           var children = scope.allSelectables;
 
           for (var i = 0; i < children.length; i++) {
-            //var childData = _.where(scope.selectionData,{id: children[i]["id"]});
+            var childData = _.where(scope.selectionData,{id: children[i]["id"]});
             if (_.where(scope.selectionData,{id: children[i]["id"]})[0]["selecting"] === true) {
               _.where(scope.selectionData,{id: children[i]["id"]})[0]["selecting"] = false;
 
@@ -433,7 +433,7 @@ angular.module('multipleSelection', [])
           ctrl.isDragSelection = true;
 
           // Deslect all the selected items
-          if((!scope.enableItemDragSelection && !event.ctrlKey) || (scope.enableItemDragSelection && !ctrl.childItemClicked)){
+          if((!scope.enableItemDragSelection && !event.ctrlKey) || (scope.enableItemDragSelection && !ctrl.childItemClicked && !event.ctrlKey)){
             scope.deselectAll();
           }
 
