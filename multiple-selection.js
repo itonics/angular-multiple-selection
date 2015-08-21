@@ -341,10 +341,18 @@ angular.module('multipleSelection', [])
          * @param  {Event} @event
          */
         function mousemove(event) {
+
+          var boundX = event.pageX;
+          boundX = (boundX < offset(element[0]).left) ? offset(element[0]).left : boundX;
+          boundX = (boundX > offset(element[0]).left + element.prop('offsetWidth')) ? (offset(element[0]).left + element.prop('offsetWidth')) : boundX;
+
+          var boundY = event.pageY;
+          boundY = (boundY < offset(element[0]).top) ? offset(element[0]).top : boundY;
+          boundY = (boundY > offset(element[0]).top + element.prop('offsetHeight')) ? (offset(element[0]).top + element.prop('offsetHeight')) : boundY;
           // Prevent default dragging of selected content
           //event.preventDefault();
           // Move helper
-          moveSelectionHelper(helper, startX, startY, event.pageX, event.pageY);
+          moveSelectionHelper(helper, startX, startY, boundX, boundY);
 
 
           function hitsAnyElement(childElements){
@@ -357,7 +365,7 @@ angular.module('multipleSelection', [])
                   offset(childElem[0]).left + childElem.prop('offsetWidth'),
                   offset(childElem[0]).top + childElem.prop('offsetHeight')
                 ),
-                transformBox(startX, startY, event.pageX, event.pageY)
+                transformBox(startX, startY, boundX, boundY)
               )){
                 hitting++;
               }
