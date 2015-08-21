@@ -85,15 +85,14 @@ angular.module('multipleSelection', [])
 
 
         element.on('mousedown.multi-select', function(event) {
-          scope.mouseDown = true;
+          ctrls[0].childItemClicked = scope.mouseDown = true;
           if(!ctrls[0].enableItemDragSelection || ctrls[1].$modelValue["selected"]){
             event.preventDefault();
             event.stopPropagation();
           }
         });
 
-        element.on('mouseup.multi-select touchend', function(event) {
-          //console.log("model", ctrls[1].$modelValue);
+        element.on('mouseup.multi-select touchend.multi-select', function(event) {
           if(scope.linkTriggered){
             scope.linkTriggered = false;
             return false;
@@ -101,27 +100,25 @@ angular.module('multipleSelection', [])
           if (event.which == 1) {
             if (!ctrls[0].continuousSelection) {
               if (ctrls[1].$modelValue["selected"]) {
-                if (event.ctrlKey) {
+                if(!event.ctrlKey){
+                  ctrls[0].deselectAll(scope.itemData['id']);
+                }else{
                   ctrls[1].$modelValue["selected"] = false;
                 }
               } else {
-                if (!event.ctrlKey) {
-                  ctrls[0].deselectAll();
+                if (!event.ctrlKey && !ctrls[0].isDragSelection) {
+                  ctrls[0].deselectAll(scope.itemData['id']);
                 }
                 ctrls[1].$modelValue["selected"] = true;
               }
             } else {
-              if(scope.mouseDown && ctrls[1].$modelValue["selected"] && ctrls[0].allSelected.length> 1){
-                ctrls[0].deselectAll(scope.itemData['id']);
-                return;
-              }
+              //if(!event.ctrlKey && scope.mouseDown && ctrls[1].$modelValue["selected"] && ctrls[0].getSelectedData().length > 1)
               ctrls[1].$modelValue["selected"] = !ctrls[1].$modelValue["selected"];
             }
 
-            scope.mouseDown = false;
+            scope.mouseDown = ctrls[0].childItemClicked = ctrls[0].isDragSelection = false;
             scope.linkTriggered = false;
-            ctrls[0].setSelected(ctrls[1].$modelValue);
-            //console.log('allselected', ctrls[0].allSelected);
+            ctrls[0].updateSelectedData(ctrls[1].$modelValue);
           }
 
           //event.stopImmediatePropagation();
@@ -178,7 +175,8 @@ angular.module('multipleSelection', [])
     return {
       restrict: 'A',
       scope: {
-        selectionData: "=?"
+        selectionData: "=?",
+        selectedData: "=?"
       },
       controller: function($scope) {
         $scope.allSelectables = [];
@@ -186,53 +184,63 @@ angular.module('multipleSelection', [])
         this.selectedClass = $scope.selectedClass = "";
         this.continuousSelection = $scope.continuousSelection = false;
         this.enableItemDragSelection = $scope.enableItemDragSelection = false;
-        this.allSelected = [];
+        this.isDragSelection = false;
+        this.childItemClicked = false;
 
-        this.getAllSelectables = function(){
+        this.getAllSelectables = $scope.getAllSelectables = function(){
           return $scope.allSelectables;
         };
 
-        this.setSelected = function(item){
-          //console.log('item',item);
+        this.getSelectedData = $scope.getSelectedData = function(){
+          return $scope.selectedData;
+        };
+
+        this.setSelectedData = $scope.setSelectedData = function (selData){
+          selData = typeof selData === 'undefined' ? [] : selData;
+          $scope.selectedData = selData;
+        };
+
+        this.updateSelectedData = $scope.updateSelectedData = function(item){
           var exist = false;
           var index = null;
-          for(var i = 0; i < this.allSelected.length; i++){
-            if(this.allSelected[i].id == item.id){
+          var selData = $scope.selectedData;
+          for(var i = 0; i < selData.length; i++){
+            if(selData[i].id == item.id){
               index = i;
               exist = true;
               break;
             }
           }
-          //console.log(item.selected, exist);
           if(item.selected && !exist){
-            this.allSelected.push(item);
+            selData.push(item);
           }else if(!item.selected && exist){
-            this.allSelected.splice(index,1);
+            selData.splice(index,1);
           }
 
+          $scope.selectedData = selData;
         };
 
-        this.totalSelected = function(){
-          var num = 0;
+        this.setAllSelected = $scope.setAllSelected = function(){
+          var selected = [];
           var children = $scope.allSelectables;
           for (var i = 0; i < children.length; i++) {
             if(_.where($scope.selectionData, {id: children[i]["id"]})[0]["selected"]){
-              num++;
+              selected.push(_.where($scope.selectionData, {id: children[i]["id"]})[0]);
             }
           }
-          return num;
+          $scope.selectedData = selected;
         };
 
-        this.populate = function(item){
+        this.populate = $scope.populate = function(item){
           $scope.allSelectables.push(item);
         };
 
-        this.deselectAll = function(exceptOjbId){
+        this.deselectAll = $scope.deselectAll = function(exceptOjbId){
           var children = $scope.allSelectables;
-          this.allSelected = [];
+          $scope.selectedData = [];
           for (var i = 0; i < children.length; i++) {
-            if(exceptOjbId && children[i]["id"] == exceptOjbId){
-              this.allSelected.push(_.where($scope.selectionData, {id: children[i]["id"]})[0]);
+            if(typeof exceptOjbId != 'undefined' && children[i]["id"] == exceptOjbId){
+              $scope.selectedData.push(_.where($scope.selectionData, {id: children[i]["id"]})[0]);
               continue;
             }
             _.where($scope.selectionData, {id: children[i]["id"]})[0]["selecting"] = false;
@@ -245,6 +253,7 @@ angular.module('multipleSelection', [])
       },
       link: function(scope, element, attrs, ctrl) {
         scope.isSelectableZone = true;
+        scope.selectionZoneOffset = offset(element[0]);
         if (typeof attrs["continuousSelection"] !== 'undefined') {
           ctrl.continuousSelection = scope.continuousSelection = true;
         }
@@ -332,7 +341,6 @@ angular.module('multipleSelection', [])
          * @param  {Event} @event
          */
         function mousemove(event) {
-          //console.log(element);
           // Prevent default dragging of selected content
           //event.preventDefault();
           // Move helper
@@ -364,7 +372,6 @@ angular.module('multipleSelection', [])
           for (var i = 0; i < children.length; i++) {
             var childData = _.where(scope.selectionData,{id: children[i]["id"]});
 
-
             if (hitsAnyElement(children[i].element)) {
               _.where(scope.selectionData, {id: children[i]["id"]})[0]["selecting"] = true;
             } else {
@@ -395,7 +402,7 @@ angular.module('multipleSelection', [])
 
               _.where(scope.selectionData,{id: children[i]["id"]})[0]["selected"] = event.ctrlKey ? !childData["selected"] : true;
 
-              ctrl.setSelected(_.where(scope.selectionData,{id: children[i]["id"]})[0]);
+              scope.updateSelectedData(_.where(scope.selectionData,{id: children[i]["id"]})[0]);
             } else {
               /*if (!scope.msService.continuousSelection && checkElementHitting(transformBox(children[i].prop('offsetLeft'), children[i].prop('offsetTop'), children[i].prop('offsetLeft') + children[i].prop('offsetWidth'), children[i].prop('offsetTop') + children[i].prop('offsetHeight')), transformBox(event.pageX, event.pageY, event.pageX, event.pageY))) {
                if (children[i].scope().isSelected === false) {
@@ -404,8 +411,8 @@ angular.module('multipleSelection', [])
                }
                }*/
             }
+            ctrl.isDragSelection = false;
           }
-          //console.log('all sel', ctrl.allSelected);
 
           // Remove listeners
           $document.off('mousemove.multi-select', mousemove);
@@ -413,23 +420,15 @@ angular.module('multipleSelection', [])
         }
 
         element.on('mousedown.multi-select', function(event) {
-          //console.log(jQuery(event.target).closest('.entity-tile'));
           // Prevent default dragging of selected content
           event.preventDefault();
-          ctrl.allSelected = [];
-          if (!event.ctrlKey) {
-            // Skip all selected or selecting items
-            //var children = getSelectableElements(element);
-            var children = scope.allSelectables;
-            for (var i = 0; i < children.length; i++) {
-              var childData = _.where(scope.selectionData,{id: children[i]["id"]});
+          ctrl.isDragSelection = true;
 
-              if (childData[0]["selecting"] === true || childData[0]["selected"] === true) {
-                _.where(scope.selectionData,{id: children[i]["id"]})[0]["selecting"] = false;
-                _.where(scope.selectionData,{id: children[i]["id"]})[0]["selected"] = false;
-              }
-            }
+          // Deslect all the selected items
+          if((!scope.enableItemDragSelection && !event.ctrlKey) || (scope.enableItemDragSelection && !ctrl.childItemClicked)){
+            scope.deselectAll();
           }
+
           // Update start coordinates
           startX = event.pageX;
           startY = event.pageY;
@@ -449,15 +448,11 @@ angular.module('multipleSelection', [])
           $document.on('mouseup.multi-select', mouseup);
         });
 
-        /*scope.$on("innerLinkTriggered", function(){
-          $document.trigger('mouseup.multi-select');
-        });*/
 
         scope.$on("$destroy", function(){
+          helper.remove();
           $document.off('mousemove.multi-select', mousemove);
           $document.off('mouseup.multi-select', mouseup);
-          //scope.msService.reset();
-          //console.log('destroy multi select');
         });
       }
     };
