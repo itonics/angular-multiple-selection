@@ -458,7 +458,6 @@ angular.module('multipleSelection', [])
 
 
         scope.$on("$destroy", function(){
-          helper.remove();
           $document.off('mousemove.multi-select', mousemove);
           $document.off('mouseup.multi-select', mouseup);
         });
