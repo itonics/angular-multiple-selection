@@ -35,10 +35,6 @@ angular.module('multipleSelection', [])
         scope.linkTriggered = false;
         scope.itemData = {};
 
-        /*element.on("contextmenu", function(e) {)
-         e.preventDefault();
-         return false;
-         });*/
 
         if(ctrls[1]){
           ctrls[1].$render = function(){
@@ -125,23 +121,23 @@ angular.module('multipleSelection', [])
         });
 
         element.on('click mousedown mouseup touchstart touchend', 'a', function(event) {
-          if(event.type === 'mousedown' || event.type === 'touchstart'){
+          if(event.type === 'mousedown'){
             if(ctrls[0].enableItemDragSelection){
               event.stopPropagation();
             }
 
             scope.linkTriggered = true;
-            $timeout(function(){
+             $timeout(function(){
               scope.linkTriggered = false;
             }, 500);
           }
-          if(event.type === 'mouseup' || event.type === 'touchend'){
+          if(event.type === 'mouseup'){
             $timeout(function(){
               scope.linkTriggered = false;
             }, 10);
           }
 
-          ctrls[0].onLinkEvtTrigger(event);
+          //ctrls[0].onLinkEvtTrigger(event);
           //event.stopPropagation();
         });
 
@@ -182,7 +178,9 @@ angular.module('multipleSelection', [])
         $scope.allSelectables = [];
         this.selectingClass = $scope.selectingClass = "";
         this.selectedClass = $scope.selectedClass = "";
+        // this variable enables continuous selection of the items without pressing 'ctrl' key
         this.continuousSelection = $scope.continuousSelection = false;
+        // this variable enables drag selection of the items via directly dragging over an item which is by default disabled
         this.enableItemDragSelection = $scope.enableItemDragSelection = false;
         this.isDragSelection = false;
         this.childItemClicked = false;
@@ -248,6 +246,20 @@ angular.module('multipleSelection', [])
           }
         };
 
+        this.selectAll = $scope.selectAll = function(){
+          var children = $scope.allSelectables;
+          var selected = [];
+          if(children.length){
+            for (var i = 0; i < children.length; i++) {
+              _.where($scope.selectionData, {id: children[i]["id"]})[0]["selecting"] = false;
+              _.where($scope.selectionData, {id: children[i]["id"]})[0]["selected"] = true;
+              selected.push(_.where($scope.selectionData, {id: children[i]["id"]})[0]);
+            }
+
+            $scope.selectedData = selected;
+          }
+        };
+
         this.onLinkEvtTrigger = $scope.onLinkEvtTrigger = function(event) {
         }
       },
@@ -273,6 +285,10 @@ angular.module('multipleSelection', [])
         var startX = 0,
           startY = 0;
         var helper;
+
+        scope.$on('MULTISEL_SELECT_ALL', scope.selectAll);
+        scope.$on('MULTISEL_SELECT_NONE', scope.deselectAll);
+
 
         /**
          * Check that 2 boxes hitting
