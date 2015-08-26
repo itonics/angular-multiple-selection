@@ -185,6 +185,10 @@ angular.module('multipleSelection', [])
         this.isDragSelection = false;
         this.childItemClicked = false;
 
+        this.selectItem = $scope.selectItem = function (itemId){
+          _.where($scope.selectionData, {id: itemId})[0]["selected"] = false;
+        };
+
         this.getAllSelectables = $scope.getAllSelectables = function(){
           return $scope.allSelectables;
         };
@@ -238,7 +242,8 @@ angular.module('multipleSelection', [])
           $scope.selectedData = [];
           for (var i = 0; i < children.length; i++) {
             if(typeof exceptOjbId != 'undefined' && children[i]["id"] == exceptOjbId){
-              $scope.selectedData.push(_.where($scope.selectionData, {id: children[i]["id"]})[0]);
+              _.where($scope.selectionData, {id: exceptOjbId})[0]["selected"] = true;
+              $scope.selectedData.push(_.where($scope.selectionData, {id: exceptOjbId})[0]);
               continue;
             }
             _.where($scope.selectionData, {id: children[i]["id"]})[0]["selecting"] = false;
@@ -288,6 +293,9 @@ angular.module('multipleSelection', [])
 
         scope.$on('MULTISEL_SELECT_ALL', scope.selectAll);
         scope.$on('MULTISEL_SELECT_NONE', scope.deselectAll);
+        scope.$on('MULTISEL_UPDATE', function(evt, itemId){
+          scope.deselectAll(itemId);
+        });
 
 
         /**
