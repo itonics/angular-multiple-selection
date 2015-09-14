@@ -30,7 +30,9 @@ angular.module('multipleSelection', [])
       controller: function($scope) {
       },
       link: function(scope, element, attrs, ctrls) {
-        if(ctrls[0].multipleSelectionZone === false || ctrls[0].multipleSelectionZone === 'false'){
+        var selectionZoneCtrl = ctrls[0];
+        var ngModelCtrl = ctrls[1];
+        if(selectionZoneCtrl.multipleSelectionZone === false || selectionZoneCtrl.multipleSelectionZone === 'false'){
         }else{
           activateItemLink();
         }
@@ -38,86 +40,102 @@ angular.module('multipleSelection', [])
         function activateItemLink(){
           scope.linkTriggered = false;
           scope.itemData = {};
+          var initClickPosition = {}, finalClickPosition = {};
 
-          if(ctrls[1]){
-            ctrls[1].$render = function(){
-              ctrls[1]["selectable"] = true;
-              scope.itemData = ctrls[1].$modelValue;
+          if(ngModelCtrl){
+            ngModelCtrl.$render = function(){
+              ngModelCtrl["selectable"] = true;
+              scope.itemData = ngModelCtrl.$modelValue;
               if(!scope.itemData.element){
                 scope.itemData.element = [];
               }
-              scope.itemData['id'] =  scope.itemData['id'] ? scope.itemData['id']: ctrls[0].getAllSelectables().length;
+              scope.itemData['id'] =  scope.itemData['id'] ? scope.itemData['id']: selectionZoneCtrl.getAllSelectables().length;
               scope.itemData.element.push(element);
-              ctrls[0].populate(scope.itemData);
+              selectionZoneCtrl.populate(scope.itemData);
             };
           }else{
-            scope.itemData['id'] = ctrls[0].getAllSelectables().length;
+            scope.itemData['id'] = selectionZoneCtrl.getAllSelectables().length;
             scope.itemData.element.push(element);
-            ctrls[0].populate(scope.itemData);
+            selectionZoneCtrl.populate(scope.itemData);
           }
 
 
           scope.$watchGroup([function () {
-            return ctrls[1].$modelValue["selecting"];
+            return ngModelCtrl.$modelValue["selecting"];
           }, function (){
-            return ctrls[1].$modelValue["selected"];
+            return ngModelCtrl.$modelValue["selected"];
           }], function(vals) {
-            scope.selecting = ctrls[0].selectingClass;
-            scope.selected = ctrls[0].selectedClass;
+            scope.selecting = selectionZoneCtrl.selectingClass;
+            scope.selected = selectionZoneCtrl.selectedClass;
 
-            if(ctrls[0].selectingClass){
+            if(selectionZoneCtrl.selectingClass){
               if(vals[0]){
-                element.addClass(ctrls[0].selectingClass);
+                element.addClass(selectionZoneCtrl.selectingClass);
               }else{
-                element.removeClass(ctrls[0].selectingClass);
+                element.removeClass(selectionZoneCtrl.selectingClass);
               }
             }
 
-            if(ctrls[0].selectedClass){
+            if(selectionZoneCtrl.selectedClass){
               if(vals[1]){
-                element.addClass(ctrls[0].selectedClass);
+                element.addClass(selectionZoneCtrl.selectedClass);
               }else{
-                element.removeClass(ctrls[0].selectedClass);
+                element.removeClass(selectionZoneCtrl.selectedClass);
               }
             }
           });
 
 
           element.on('mousedown.multi-select', function(event) {
-            ctrls[0].childItemClicked = scope.mouseDown = true;
-            if(!ctrls[0].enableItemDragSelection || ctrls[1].$modelValue["selected"]){
+            initClickPosition = {
+              x: event.clientX,
+              y: event.clientY
+            };
+            selectionZoneCtrl.childItemClicked = scope.mouseDown = true;
+            if(!selectionZoneCtrl.enableItemDragSelection || ngModelCtrl.$modelValue["selected"]){
               event.preventDefault();
               event.stopPropagation();
             }
           });
 
           element.on('mouseup.multi-select touchend.multi-select', function(event) {
+            finalClickPosition = {
+              x: event.clientX,
+              y: event.clientY
+            };
+
             if(scope.linkTriggered){
               scope.linkTriggered = false;
               return false;
             }
             if (event.which == 1) {
-              if (!ctrls[0].continuousSelection) {
-                if (ctrls[1].$modelValue["selected"]) {
+              if (!selectionZoneCtrl.continuousSelection) {
+                if (ngModelCtrl.$modelValue["selected"]) {
                   if(!event.ctrlKey){
-                    ctrls[0].deselectAll(scope.itemData['id']);
+                    selectionZoneCtrl.deselectAll(scope.itemData['id']);
                   }else{
-                    ctrls[1].$modelValue["selected"] = false;
+                    ngModelCtrl.$modelValue["selected"] = false;
                   }
                 } else {
-                  if (!event.ctrlKey && !ctrls[0].isDragSelection) {
-                    ctrls[0].deselectAll(scope.itemData['id']);
+                  if (!event.ctrlKey && !selectionZoneCtrl.isDragSelection) {
+                    selectionZoneCtrl.deselectAll(scope.itemData['id']);
                   }
-                  ctrls[1].$modelValue["selected"] = true;
+                  ngModelCtrl.$modelValue["selected"] = true;
                 }
               } else {
-                //if(!event.ctrlKey && scope.mouseDown && ctrls[1].$modelValue["selected"] && ctrls[0].getSelectedData().length > 1)
-                ctrls[1].$modelValue["selected"] = !ctrls[1].$modelValue["selected"];
+                if(!ngModelCtrl.$modelValue["selected"]){
+                  ngModelCtrl.$modelValue["selected"] = true;
+                }else{
+                  if(initClickPosition.x === finalClickPosition.x || initClickPosition.y === finalClickPosition.y){
+                    ngModelCtrl.$modelValue["selected"] = false;
+                  }
+                }
+                //ngModelCtrl.$modelValue["selected"] = !ngModelCtrl.$modelValue["selected"];
               }
 
-              scope.mouseDown = ctrls[0].childItemClicked = ctrls[0].isDragSelection = false;
+              scope.mouseDown = selectionZoneCtrl.childItemClicked = selectionZoneCtrl.isDragSelection = false;
               scope.linkTriggered = false;
-              ctrls[0].updateSelectedData(ctrls[1].$modelValue);
+              selectionZoneCtrl.updateSelectedData(ngModelCtrl.$modelValue);
             }
 
             //event.stopImmediatePropagation();
@@ -125,7 +143,7 @@ angular.module('multipleSelection', [])
 
           element.on('click mousedown mouseup touchstart touchend', 'a', function(event) {
             if(event.type === 'mousedown'){
-              if(ctrls[0].enableItemDragSelection){
+              if(selectionZoneCtrl.enableItemDragSelection){
                 event.stopPropagation();
               }
 
@@ -140,18 +158,18 @@ angular.module('multipleSelection', [])
               }, 10);
             }
 
-            //ctrls[0].onLinkEvtTrigger(event);
+            //selectionZoneCtrl.onLinkEvtTrigger(event);
             //event.stopPropagation();
           });
 
           scope.$watch(function(){
             return scope.itemData['isSelecting'];
           }, function(val){
-            if(ctrls[0].selectingClass){
+            if(selectionZoneCtrl.selectingClass){
               if(val){
-                element.addClass(ctrls[0].selectingClass);
+                element.addClass(selectionZoneCtrl.selectingClass);
               }else {
-                element.removeClass(ctrls[0].selectingClass);
+                element.removeClass(selectionZoneCtrl.selectingClass);
               }
             }
           });
@@ -159,11 +177,11 @@ angular.module('multipleSelection', [])
           scope.$watch(function(){
             return scope.itemData['isSelected'];
           }, function(val){
-            if(ctrls[0].selectedClass){
+            if(selectionZoneCtrl.selectedClass){
               if(val){
-                element.addClass(ctrls[0].selectedClass);
+                element.addClass(selectionZoneCtrl.selectedClass);
               }else {
-                element.removeClass(ctrls[0].selectedClass);
+                element.removeClass(selectionZoneCtrl.selectedClass);
               }
             }
           });
