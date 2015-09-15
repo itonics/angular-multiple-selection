@@ -123,14 +123,9 @@ angular.module('multipleSelection', [])
                   ngModelCtrl.$modelValue["selected"] = true;
                 }
               } else {
-                if(!ngModelCtrl.$modelValue["selected"]){
-                  ngModelCtrl.$modelValue["selected"] = true;
-                }else{
-                  if(initClickPosition.x === finalClickPosition.x || initClickPosition.y === finalClickPosition.y){
-                    ngModelCtrl.$modelValue["selected"] = false;
-                  }
+                if(initClickPosition.x === finalClickPosition.x || initClickPosition.y === finalClickPosition.y){
+                  ngModelCtrl.$modelValue["selected"] = !ngModelCtrl.$modelValue["selected"];
                 }
-                //ngModelCtrl.$modelValue["selected"] = !ngModelCtrl.$modelValue["selected"];
               }
 
               scope.mouseDown = selectionZoneCtrl.childItemClicked = selectionZoneCtrl.isDragSelection = false;
