@@ -86,11 +86,19 @@ angular.module('multipleSelection', [])
           });
 
 
-          element.on('mousedown.multi-select', function(event) {
+          element.on('mousedown.multi-select', function(event, optEvtData) {
             initClickPosition = {
               x: event.clientX,
               y: event.clientY
             };
+
+            if(optEvtData && typeof optEvtData ==='object'){
+              initClickPosition = {
+                x: optEvtData.clientX,
+                y: optEvtData.clientY
+              };
+            }
+
             selectionZoneCtrl.childItemClicked = scope.mouseDown = true;
             if(!selectionZoneCtrl.enableItemDragSelection || ngModelCtrl.$modelValue["selected"]){
               event.preventDefault();
@@ -98,11 +106,19 @@ angular.module('multipleSelection', [])
             }
           });
 
-          element.on('mouseup.multi-select touchend.multi-select', function(event) {
+          element.on('mouseup.multi-select touchend.multi-select', function(event, optEvtData) {
             finalClickPosition = {
               x: event.clientX,
               y: event.clientY
             };
+
+            if(optEvtData && typeof optEvtData ==='object'){
+              finalClickPosition = {
+                x: optEvtData.clientX,
+                y: optEvtData.clientY
+              };
+              event.which = optEvtData.which;
+            }
 
             if(scope.linkTriggered){
               scope.linkTriggered = false;
