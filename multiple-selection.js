@@ -107,6 +107,7 @@ angular.module('multipleSelection', [])
           });
 
           element.on('mouseup.multi-select touchend.multi-select', function(event, optEvtData) {
+
             finalClickPosition = {
               x: event.clientX,
               y: event.clientY
@@ -124,6 +125,7 @@ angular.module('multipleSelection', [])
               scope.linkTriggered = false;
               return false;
             }
+
             if (event.which == 1) {
               if (!selectionZoneCtrl.continuousSelection) {
                 if (ngModelCtrl.$modelValue["selected"]) {
@@ -309,6 +311,20 @@ angular.module('multipleSelection', [])
             }
           };
 
+          self.isElemVisible = $scope.isElemVisible = function(elem){
+            var isVisible = true;
+            if(elem.prop('offsetWidth') <= 0 ||
+              elem.prop('offsetHeight') <= 0 ||
+              (offset(elem[0]).left + elem.prop('offsetWidth')) < 0 ||
+              (offset(elem[0]).top + elem.prop('offsetHeight')) < 0 ||
+              !elem.is(':visible') ||
+              parseFloat(elem.css('opacity')) <= 0 ||
+              elem.css('display') === 'none'){
+              isVisible = false;
+            }
+            return isVisible;
+          };
+
           self.onLinkEvtTrigger = $scope.onLinkEvtTrigger = function(event) {
           }
         }
@@ -346,6 +362,9 @@ angular.module('multipleSelection', [])
           scope.$on('MULTISEL_SELECT_NONE', scope.deselectAll);
           scope.$on('MULTISEL_UPDATE', function(evt, itemId){
             scope.deselectAll(itemId);
+          });
+          scope.$on('MULTISEL_RESET_CLICKSTATE', function(){
+            ctrl.childItemClicked = false;
           });
 
 
@@ -433,7 +452,7 @@ angular.module('multipleSelection', [])
             function hitsAnyElement(childElements){
               var hitting = 0;
               _.each(childElements,function(childElem){
-                if(checkElementHitting(
+                if(scope.isElemVisible(childElem) && checkElementHitting(
                     transformBox(
                       offset(childElem[0]).left,
                       offset(childElem[0]).top,
@@ -465,6 +484,8 @@ angular.module('multipleSelection', [])
 
           }
 
+
+
           /**
            * Event on Mouse up
            * @param  {Event} event
@@ -495,6 +516,10 @@ angular.module('multipleSelection', [])
                  }*/
               }
               ctrl.isDragSelection = false;
+            }
+
+            if(ctrl.childItemClicked){
+              ctrl.childItemClicked = false;
             }
 
             // Remove listeners
