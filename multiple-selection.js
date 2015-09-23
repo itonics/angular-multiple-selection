@@ -198,6 +198,10 @@ angular.module('multipleSelection', [])
               }
             }
           });
+
+          scope.$on('$destroy', function() {
+            selectionZoneCtrl.remove(scope.itemData);
+          });
         }
       }
     };
@@ -323,6 +327,10 @@ angular.module('multipleSelection', [])
               isVisible = false;
             }
             return isVisible;
+          };
+
+          self.remove = $scope.remove = function(item){
+            $scope.allSelectables = _.reject($scope.allSelectables, {id: item.id});
           };
 
           self.onLinkEvtTrigger = $scope.onLinkEvtTrigger = function(event) {
