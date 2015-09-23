@@ -123,7 +123,7 @@ angular.module('multipleSelection', [])
 
             if(scope.linkTriggered){
               scope.linkTriggered = false;
-              return false;
+              return;
             }
 
             if (event.which == 1) {
