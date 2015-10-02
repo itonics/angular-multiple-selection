@@ -219,7 +219,7 @@ angular.module('multipleSelection', [])
         var self = this;
 
         if($scope.multipleSelectionZone === 'false' || $scope.multipleSelectionZone === false){
-          console.log("Multi-selection-zone disabled!");
+          //console.log("Multi-selection-zone disabled!");
         }else{
           activateController();
         }
