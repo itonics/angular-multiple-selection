@@ -342,6 +342,10 @@ angular.module('multipleSelection', [])
                             var selObj = _.where(scope.selectedData, {uri: selData.uri});
                             selData.selected = selObj && selObj.length;
                         });
+
+                        $timeout(function(){
+                            scope.$emit("MULTISEL_UPDATED", scope.selectedData);
+                        });
                     });
 
                     scope.$on('MULTISEL_SELECT_ALL', scope.selectAll);
