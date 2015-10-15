@@ -26,12 +26,11 @@ angular.module('multipleSelection', [])
     .directive('multipleSelectionItem', ['$timeout', function($timeout) {
         return {
             restrict: 'A',
-            require: ["^multipleSelectionZone", "ngModel"],
+            require: ["^multipleSelectionZone"],
             controller: function($scope) {
             },
             link: function(scope, element, attrs, ctrls) {
                 var selectionZoneCtrl = ctrls[0];
-                var ngModelCtrl = ctrls[1];
                 var selectingClass = selectionZoneCtrl.selectingClass || "isSelecting";
                 var selectedClass = selectionZoneCtrl.selectedClass || "isSelected";
 
@@ -42,24 +41,15 @@ angular.module('multipleSelection', [])
 
                 function activateItemLink() {
                     scope.linkTriggered = false;
-                    scope.itemData = {};
+                    scope.itemData = scope.$eval(attrs.multipleSelectionItem);
                     var initClickPosition = {}, finalClickPosition = {};
 
-                    if(ngModelCtrl) {
-                        ngModelCtrl.$render = function() {
-                            scope.itemData = angular.copy(ngModelCtrl.$modelValue);
-                            if(!scope.itemData.element) {
-                                scope.itemData.element = [];
-                            }
-                            //scope.itemData['uri'] = scope.itemData['uri'] ? scope.itemData['uri'] : selectionZoneCtrl.getAllSelectables().length;
-                            scope.itemData.element.push(element);
-                            selectionZoneCtrl.populate(scope.itemData);
-                        };
-                    } else {
-                        scope.itemData['uri'] = selectionZoneCtrl.getAllSelectables().length;
-                        scope.itemData.element.push(element);
-                        selectionZoneCtrl.populate(scope.itemData);
+                    if(!scope.itemData.element) {
+                        scope.itemData.element = [];
                     }
+                    //scope.itemData['uri'] = scope.itemData['uri'] ? scope.itemData['uri'] : selectionZoneCtrl.getAllSelectables().length;
+                    scope.itemData.element.push(element);
+                    selectionZoneCtrl.populate(scope.itemData);
 
 
                     scope.$watchGroup([function() {
@@ -95,7 +85,7 @@ angular.module('multipleSelection', [])
                         }
 
                         selectionZoneCtrl.childItemClicked = scope.mouseDown = true;
-                        if(!selectionZoneCtrl.enableItemDragSelection || ngModelCtrl.$modelValue["selected"]) {
+                        if(!selectionZoneCtrl.enableItemDragSelection || scope.itemData["selected"]) {
                             event.preventDefault();
                             event.stopPropagation();
                         }
@@ -335,15 +325,15 @@ angular.module('multipleSelection', [])
                         startY = 0;
                     var helper;
 
-                    scope.$watch(function(){
+                    scope.$watch(function() {
                         return scope.selectedData.length;
-                    }, function(){
-                        _.each(scope.allSelectables, function(selData){
+                    }, function() {
+                        _.each(scope.allSelectables, function(selData) {
                             var selObj = _.where(scope.selectedData, {uri: selData.uri});
                             selData.selected = selObj && selObj.length;
                         });
 
-                        $timeout(function(){
+                        $timeout(function() {
                             scope.$emit("MULTISEL_UPDATED", scope.selectedData);
                         });
                     });
