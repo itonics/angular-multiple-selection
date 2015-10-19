@@ -41,7 +41,9 @@ angular.module('multipleSelection', [])
 
                 function activateItemLink() {
                     scope.linkTriggered = false;
-                    scope.itemData = scope.$eval(attrs.multipleSelectionItem);
+                    scope.itemData = {};
+                    scope.itemData.uri = scope.$eval(attrs.multipleSelectionItem);
+                    //scope.itemData = angular.copy(scope.$eval(attrs.multipleSelectionItem));
                     var initClickPosition = {}, finalClickPosition = {};
 
                     if(!scope.itemData.element) {
