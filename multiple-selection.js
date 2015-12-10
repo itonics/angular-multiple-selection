@@ -43,6 +43,7 @@ angular.module('multipleSelection', [])
                     scope.linkTriggered = false;
                     scope.itemData = {};
                     scope.itemData.uri = scope.$eval(attrs.multipleSelectionItem);
+                    scope.itemData.type = (attrs.multiSelItemType && typeof attrs.multiSelItemType !== 'undefined')?scope.$eval(attrs.multiSelItemType):'';
                     //scope.itemData = angular.copy(scope.$eval(attrs.multipleSelectionItem));
                     var initClickPosition = {}, finalClickPosition = {};
 
