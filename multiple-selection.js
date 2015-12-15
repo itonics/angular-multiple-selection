@@ -250,13 +250,14 @@ angular.module('multipleSelection', [])
                         $scope.allSelectables.push(item);
                     };
 
-                    self.deselectAll = $scope.deselectAll = function(exceptOjbId) {
+                    self.deselectAll = $scope.deselectAll = function(except) {
+                        except = !Array.isArray(except)? [except] : except;
                         var children = $scope.allSelectables;
                         $scope.selectedData = [];
                         for(var i = 0; i < children.length; i++) {
-                            if(typeof exceptOjbId != 'undefined' && children[i]["uri"] == exceptOjbId) {
-                                _.where($scope.allSelectables, {uri: exceptOjbId})[0]["selected"] = true;
-                                $scope.selectedData.push(_.where($scope.allSelectables, {uri: exceptOjbId})[0]);
+                            if(typeof except != 'undefined' && except.indexOf(children[i]["uri"])!== -1) {
+                                _.where($scope.allSelectables, {uri: except[except.indexOf(children[i]["uri"])]})[0]["selected"] = true;
+                                $scope.selectedData.push(_.where($scope.allSelectables, {uri: except[except.indexOf(children[i]["uri"])]})[0]);
                                 continue;
                             }
                             _.where($scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] = false;
