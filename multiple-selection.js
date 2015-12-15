@@ -328,9 +328,11 @@ angular.module('multipleSelection', [])
                         startY = 0;
                     var helper;
 
-                    scope.$watch(function() {
+                    scope.$watchGroup([function() {
+                        return scope.selectedData;
+                    }, function(){
                         return scope.selectedData.length;
-                    }, function() {
+                    }], function() {
                         _.each(scope.allSelectables, function(selData) {
                             var selObj = _.where(scope.selectedData, {uri: selData.uri});
                             selData.selected = selObj && selObj.length;
