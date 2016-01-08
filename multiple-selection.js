@@ -41,8 +41,10 @@ angular.module('multipleSelection', [])
 
                 function activateItemLink() {
                     scope.linkTriggered = false;
+                    scope.allSelectables = selectionZoneCtrl.getAllSelectables();
                     scope.itemData = {};
                     scope.itemData.uri = scope.$eval(attrs.multipleSelectionItem);
+                    scope.itemData.id = scope.allSelectables.length + "_" + Math.random()*1000;
                     scope.itemData.type = (attrs.multiSelItemType && typeof attrs.multiSelItemType !== 'undefined')?scope.$eval(attrs.multiSelItemType):'';
                     //scope.itemData = angular.copy(scope.$eval(attrs.multipleSelectionItem));
                     var initClickPosition = {}, finalClickPosition = {};
@@ -118,13 +120,13 @@ angular.module('multipleSelection', [])
                             if(!selectionZoneCtrl.continuousSelection) {
                                 if(scope.itemData.selected) {
                                     if(!event.ctrlKey) {
-                                        selectionZoneCtrl.deselectAll(scope.itemData['uri']);
+                                        selectionZoneCtrl.deselectAll(scope.itemData['id']);
                                     } else {
                                         scope.itemData.selected = false;
                                     }
                                 } else {
                                     if(!event.ctrlKey && !selectionZoneCtrl.isDragSelection) {
-                                        selectionZoneCtrl.deselectAll(scope.itemData['uri']);
+                                        selectionZoneCtrl.deselectAll(scope.itemData['id']);
                                     }
                                     scope.itemData.selected = true;
                                 }
@@ -199,7 +201,7 @@ angular.module('multipleSelection', [])
                     self.childItemClicked = false;
 
                     self.selectItem = $scope.selectItem = function(itemId) {
-                        _.where($scope.allSelectables, {uri: itemId})[0]["selected"] = false;
+                        _.where($scope.allSelectables, {id: itemId})[0]["selected"] = false;
                     };
 
                     self.getAllSelectables = $scope.getAllSelectables = function() {
@@ -220,7 +222,7 @@ angular.module('multipleSelection', [])
                         var index = null;
                         var selData = $scope.selectedData;
                         for(var i = 0; i < selData.length; i++) {
-                            if(selData[i].uri == item.uri) {
+                            if(selData[i].id == item.id) {
                                 index = i;
                                 exist = true;
                                 break;
@@ -239,8 +241,8 @@ angular.module('multipleSelection', [])
                         var selected = [];
                         var children = $scope.allSelectables;
                         for(var i = 0; i < children.length; i++) {
-                            if(_.where($scope.allSelectables, {uri: children[i]["uri"]})[0]["selected"]) {
-                                selected.push(_.where($scope.allSelectables, {uri: children[i]["uri"]})[0]);
+                            if(_.where($scope.allSelectables, {id: children[i]["id"]})[0]["selected"]) {
+                                selected.push(_.where($scope.allSelectables, {id: children[i]["id"]})[0]);
                             }
                         }
                         $scope.selectedData = selected;
@@ -255,13 +257,13 @@ angular.module('multipleSelection', [])
                         var children = $scope.allSelectables;
                         $scope.selectedData = [];
                         for(var i = 0; i < children.length; i++) {
-                            if(typeof except != 'undefined' && except.indexOf(children[i]["uri"])!== -1) {
-                                _.where($scope.allSelectables, {uri: except[except.indexOf(children[i]["uri"])]})[0]["selected"] = true;
-                                $scope.selectedData.push(_.where($scope.allSelectables, {uri: except[except.indexOf(children[i]["uri"])]})[0]);
+                            if(typeof except != 'undefined' && except.indexOf(children[i]["id"])!== -1) {
+                                _.where($scope.allSelectables, {id: except[except.indexOf(children[i]["id"])]})[0]["selected"] = true;
+                                $scope.selectedData.push(_.where($scope.allSelectables, {id: except[except.indexOf(children[i]["id"])]})[0]);
                                 continue;
                             }
-                            _.where($scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] = false;
-                            _.where($scope.allSelectables, {uri: children[i]["uri"]})[0]["selected"] = false;
+                            _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
+                            _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = false;
                         }
                     };
 
@@ -270,9 +272,9 @@ angular.module('multipleSelection', [])
                         var selected = [];
                         if(children.length) {
                             for(var i = 0; i < children.length; i++) {
-                                _.where($scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] = false;
-                                _.where($scope.allSelectables, {uri: children[i]["uri"]})[0]["selected"] = true;
-                                selected.push(_.where($scope.allSelectables, {uri: children[i]["uri"]})[0]);
+                                _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
+                                _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = true;
+                                selected.push(_.where($scope.allSelectables, {id: children[i]["id"]})[0]);
                             }
 
                             $scope.selectedData = selected;
@@ -293,7 +295,7 @@ angular.module('multipleSelection', [])
                     };
 
                     self.remove = $scope.remove = function(item) {
-                        $scope.allSelectables = _.reject($scope.allSelectables, {uri: item.uri});
+                        $scope.allSelectables = _.reject($scope.allSelectables, {id: item.id});
                     };
 
                     self.onLinkEvtTrigger = $scope.onLinkEvtTrigger = function(event) {
@@ -335,7 +337,7 @@ angular.module('multipleSelection', [])
                         return scope.selectedData.length;
                     }], function() {
                         _.each(scope.allSelectables, function(selData) {
-                            var selObj = _.where(scope.selectedData, {uri: selData.uri});
+                            var selObj = _.where(scope.selectedData, {id: selData.id});
                             selData.selected = selObj && selObj.length;
                         });
 
@@ -346,7 +348,9 @@ angular.module('multipleSelection', [])
 
                     scope.$on('MULTISEL_SELECT_ALL', scope.selectAll);
                     scope.$on('MULTISEL_SELECT_NONE', scope.deselectAll);
-                    scope.$on('MULTISEL_UPDATE', function(evt, itemId) {
+                    scope.$on('MULTISEL_UPDATE', function(evt, itemUri) {
+                        var itemId = _.where(scope.allSelectables, {uri: itemUri})[0].id;
+
                         scope.deselectAll(itemId);
                     });
                     scope.$on('MULTISEL_RESET_CLICKSTATE', function() {
@@ -458,13 +462,13 @@ angular.module('multipleSelection', [])
                         //var children = getSelectableElements(element);
                         var children = scope.allSelectables;
                         for(var i = 0; i < children.length; i++) {
-                            var childData = _.where(scope.allSelectables, {uri: children[i]["uri"]});
+                            var childData = _.where(scope.allSelectables, {id: children[i]["id"]});
 
                             if(hitsAnyElement(children[i].element)) {
-                                _.where(scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] = true;
+                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = true;
                             } else {
-                                _.where(scope.allSelectables, {uri: children[i]["uri"]})[0]["selected"] = false;
-                                _.where(scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] = false;
+                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = false;
+                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
                             }
                         }
 
@@ -485,13 +489,13 @@ angular.module('multipleSelection', [])
                         var children = scope.allSelectables;
 
                         for(var i = 0; i < children.length; i++) {
-                            var childData = _.where(scope.allSelectables, {uri: children[i]["uri"]});
-                            if(_.where(scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] === true) {
-                                _.where(scope.allSelectables, {uri: children[i]["uri"]})[0]["selecting"] = false;
+                            var childData = _.where(scope.allSelectables, {id: children[i]["id"]});
+                            if(_.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] === true) {
+                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
 
-                                _.where(scope.allSelectables, {uri: children[i]["uri"]})[0]["selected"] = event.ctrlKey ? !childData["selected"] : true;
+                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = event.ctrlKey ? !childData["selected"] : true;
 
-                                scope.updateSelectedData(_.where(scope.allSelectables, {uri: children[i]["uri"]})[0]);
+                                scope.updateSelectedData(_.where(scope.allSelectables, {id: children[i]["id"]})[0]);
                             } else {
                                 /*if (!scope.msService.continuousSelection && checkElementHitting(transformBox(children[i].prop('offsetLeft'), children[i].prop('offsetTop'), children[i].prop('offsetLeft') + children[i].prop('offsetWidth'), children[i].prop('offsetTop') + children[i].prop('offsetHeight')), transformBox(event.pageX, event.pageY, event.pageX, event.pageY))) {
                                  if (children[i].scope().isSelected === false) {
