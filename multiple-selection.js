@@ -43,8 +43,8 @@ angular.module('multipleSelection', [])
                     scope.linkTriggered = false;
                     scope.allSelectables = selectionZoneCtrl.getAllSelectables();
                     scope.itemData = {};
-                    scope.itemData.uri = scope.$eval(attrs.multipleSelectionItem);
-                    scope.itemData.id = scope.allSelectables.length + "_" + Math.round(Math.random()*1000);
+                    scope.itemData.uri = (attrs.multipleSelectionItem) ? scope.$eval(attrs.multipleSelectionItem) : Math.round(Math.random()*99999);
+                    scope.itemData.id = scope.allSelectables.length + "_" + scope.itemData.uri;
                     scope.itemData.type = (attrs.multiSelItemType && typeof attrs.multiSelItemType !== 'undefined')?scope.$eval(attrs.multiSelItemType):'';
                     //scope.itemData = angular.copy(scope.$eval(attrs.multipleSelectionItem));
                     var initClickPosition = {}, finalClickPosition = {};
@@ -335,8 +335,8 @@ angular.module('multipleSelection', [])
                         return scope.selectedData;
                     }, function() {
                         _.each(scope.allSelectables, function(selData) {
-                            var selUri = selData.uri;
-                            var selObj = _.where(scope.selectedData, {uri: selUri});
+                           // var selUri = selData.uri;
+                            var selObj = _.where(scope.selectedData, {id: selData.id});
                             selData.selected = selObj && selObj.length;
                         });
 
