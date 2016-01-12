@@ -361,7 +361,7 @@ angular.module('multipleSelection', [])
                             selData.selected = selObj && selObj.length;
                         });
 
-                        if (scope.selectedData || scope.selectedData.length > 0) {
+                        if (scope.selectedData && scope.selectedData.length > 0) {
                             $timeout(function() {
                                 scope.$emit("MULTISEL_UPDATED", scope.selectedData);
                             });
