@@ -13,7 +13,7 @@ function offset(element) {
         doc = element && element.ownerDocument;
     documentElem = doc.documentElement;
 
-    if(typeof element.getBoundingClientRect !== undefined) {
+    if (typeof element.getBoundingClientRect !== undefined) {
         box = element.getBoundingClientRect();
     }
 
@@ -27,15 +27,13 @@ angular.module('multipleSelection', [])
         return {
             restrict: 'A',
             require: ["^multipleSelectionZone"],
-            controller: function($scope) {
-            },
+            controller: function($scope) {},
             link: function(scope, element, attrs, ctrls) {
                 var selectionZoneCtrl = ctrls[0];
                 var selectingClass = selectionZoneCtrl.selectingClass || "isSelecting";
                 var selectedClass = selectionZoneCtrl.selectedClass || "isSelected";
 
-                if(selectionZoneCtrl.multipleSelectionZone === false || selectionZoneCtrl.multipleSelectionZone === 'false') {
-                } else {
+                if (selectionZoneCtrl.multipleSelectionZone === false || selectionZoneCtrl.multipleSelectionZone === 'false') {} else {
                     activateItemLink();
                 }
 
@@ -43,13 +41,14 @@ angular.module('multipleSelection', [])
                     scope.linkTriggered = false;
                     scope.allSelectables = selectionZoneCtrl.getAllSelectables();
                     scope.itemData = {};
-                    scope.itemData.uri = (attrs.multipleSelectionItem) ? scope.$eval(attrs.multipleSelectionItem) : Math.round(Math.random()*99999);
+                    scope.itemData.uri = (attrs.multipleSelectionItem) ? scope.$eval(attrs.multipleSelectionItem) : Math.round(Math.random() * 99999);
                     scope.itemData.id = scope.allSelectables.length + "_" + scope.itemData.uri;
-                    scope.itemData.type = (attrs.multiSelItemType && typeof attrs.multiSelItemType !== 'undefined')?scope.$eval(attrs.multiSelItemType):'';
+                    scope.itemData.type = (attrs.multiSelItemType && typeof attrs.multiSelItemType !== 'undefined') ? scope.$eval(attrs.multiSelItemType) : '';
                     //scope.itemData = angular.copy(scope.$eval(attrs.multipleSelectionItem));
-                    var initClickPosition = {}, finalClickPosition = {};
+                    var initClickPosition = {},
+                        finalClickPosition = {};
 
-                    if(!scope.itemData.element) {
+                    if (!scope.itemData.element) {
                         scope.itemData.element = [];
                     }
                     //scope.itemData['uri'] = scope.itemData['uri'] ? scope.itemData['uri'] : selectionZoneCtrl.getAllSelectables().length;
@@ -62,13 +61,13 @@ angular.module('multipleSelection', [])
                     }, function() {
                         return scope.itemData.selected;
                     }], function(vals) {
-                        if(vals[0]) {
+                        if (vals[0]) {
                             element.addClass(selectingClass);
                         } else {
                             element.removeClass(selectingClass);
                         }
 
-                        if(vals[1]) {
+                        if (vals[1]) {
                             element.addClass(selectedClass);
                         } else {
                             element.removeClass(selectedClass);
@@ -82,7 +81,7 @@ angular.module('multipleSelection', [])
                             y: event.clientY
                         };
 
-                        if(optEvtData && typeof optEvtData === 'object') {
+                        if (optEvtData && typeof optEvtData === 'object') {
                             initClickPosition = {
                                 x: optEvtData.clientX,
                                 y: optEvtData.clientY
@@ -90,7 +89,7 @@ angular.module('multipleSelection', [])
                         }
 
                         selectionZoneCtrl.childItemClicked = scope.mouseDown = true;
-                        if(!selectionZoneCtrl.enableItemDragSelection || scope.itemData["selected"]) {
+                        if (!selectionZoneCtrl.enableItemDragSelection || scope.itemData.selected) {
                             event.preventDefault();
                             event.stopPropagation();
                         }
@@ -103,7 +102,7 @@ angular.module('multipleSelection', [])
                             y: event.clientY
                         };
 
-                        if(optEvtData && typeof optEvtData === 'object') {
+                        if (optEvtData && typeof optEvtData === 'object') {
                             finalClickPosition = {
                                 x: optEvtData.clientX,
                                 y: optEvtData.clientY
@@ -111,27 +110,27 @@ angular.module('multipleSelection', [])
                             event.which = optEvtData.which;
                         }
 
-                        if(scope.linkTriggered) {
+                        if (scope.linkTriggered) {
                             scope.linkTriggered = false;
                             return;
                         }
 
-                        if(event.which == 1) {
-                            if(!selectionZoneCtrl.continuousSelection) {
-                                if(scope.itemData.selected) {
-                                    if(!event.ctrlKey) {
-                                        selectionZoneCtrl.deselectAll(scope.itemData['id']);
+                        if (event.which == 1) {
+                            if (!selectionZoneCtrl.continuousSelection) {
+                                if (scope.itemData.selected) {
+                                    if (!event.ctrlKey) {
+                                        selectionZoneCtrl.deselectAll(scope.itemData.id);
                                     } else {
                                         scope.itemData.selected = false;
                                     }
                                 } else {
-                                    if(!event.ctrlKey && !selectionZoneCtrl.isDragSelection) {
-                                        selectionZoneCtrl.deselectAll(scope.itemData['id']);
+                                    if (!event.ctrlKey && !selectionZoneCtrl.isDragSelection) {
+                                        selectionZoneCtrl.deselectAll(scope.itemData.id);
                                     }
                                     scope.itemData.selected = true;
                                 }
                             } else {
-                                if(initClickPosition.x === finalClickPosition.x || initClickPosition.y === finalClickPosition.y) {
+                                if (initClickPosition.x === finalClickPosition.x || initClickPosition.y === finalClickPosition.y) {
                                     scope.itemData.selected = !scope.itemData.selected;
                                 }
                             }
@@ -145,8 +144,8 @@ angular.module('multipleSelection', [])
                     });
 
                     element.on('click mousedown mouseup touchstart touchend', 'a', function(event) {
-                        if(event.type === 'mousedown') {
-                            if(selectionZoneCtrl.enableItemDragSelection) {
+                        if (event.type === 'mousedown') {
+                            if (selectionZoneCtrl.enableItemDragSelection) {
                                 event.stopPropagation();
                             }
 
@@ -155,7 +154,7 @@ angular.module('multipleSelection', [])
                                 scope.linkTriggered = false;
                             }, 500);
                         }
-                        if(event.type === 'mouseup') {
+                        if (event.type === 'mouseup') {
                             $timeout(function() {
                                 scope.linkTriggered = false;
                             }, 10);
@@ -183,7 +182,7 @@ angular.module('multipleSelection', [])
                 this.multipleSelectionZone = $scope.multipleSelectionZone;
                 var self = this;
 
-                if($scope.multipleSelectionZone === 'false' || $scope.multipleSelectionZone === false) {
+                if ($scope.multipleSelectionZone === 'false' || $scope.multipleSelectionZone === false) {
                     //console.log("Multi-selection-zone disabled!");
                 } else {
                     activateController();
@@ -201,7 +200,9 @@ angular.module('multipleSelection', [])
                     self.childItemClicked = false;
 
                     self.selectItem = $scope.selectItem = function(itemId) {
-                        _.where($scope.allSelectables, {id: itemId})[0]["selected"] = false;
+                        _.where($scope.allSelectables, {
+                            id: itemId
+                        })[0].selected = false;
                     };
 
                     self.getAllSelectables = $scope.getAllSelectables = function() {
@@ -221,16 +222,16 @@ angular.module('multipleSelection', [])
                         var exist = false;
                         var index = null;
                         var selData = $scope.selectedData;
-                        for(var i = 0; i < selData.length; i++) {
-                            if(selData[i].id == item.id) {
+                        for (var i = 0; i < selData.length; i++) {
+                            if (selData[i].id == item.id) {
                                 index = i;
                                 exist = true;
                                 break;
                             }
                         }
-                        if(item.selected && !exist) {
+                        if (item.selected && !exist) {
                             selData.push(item);
-                        } else if(!item.selected && exist) {
+                        } else if (!item.selected && exist) {
                             selData.splice(index, 1);
                         }
 
@@ -240,9 +241,13 @@ angular.module('multipleSelection', [])
                     self.setAllSelected = $scope.setAllSelected = function() {
                         var selected = [];
                         var children = $scope.allSelectables;
-                        for(var i = 0; i < children.length; i++) {
-                            if(_.where($scope.allSelectables, {id: children[i]["id"]})[0]["selected"]) {
-                                selected.push(_.where($scope.allSelectables, {id: children[i]["id"]})[0]);
+                        for (var i = 0; i < children.length; i++) {
+                            if (_.where($scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selected) {
+                                selected.push(_.where($scope.allSelectables, {
+                                    id: children[i].id
+                                })[0]);
                             }
                         }
                         $scope.selectedData = selected;
@@ -253,28 +258,42 @@ angular.module('multipleSelection', [])
                     };
 
                     self.deselectAll = $scope.deselectAll = function(except) {
-                        except = !Array.isArray(except)? [except] : except;
+                        except = !Array.isArray(except) ? [except] : except;
                         var children = $scope.allSelectables;
                         $scope.selectedData = [];
-                        for(var i = 0; i < children.length; i++) {
-                            if(typeof except != 'undefined' && except.indexOf(children[i]["id"])!== -1) {
-                                _.where($scope.allSelectables, {id: except[except.indexOf(children[i]["id"])]})[0]["selected"] = true;
-                                $scope.selectedData.push(_.where($scope.allSelectables, {id: except[except.indexOf(children[i]["id"])]})[0]);
+                        for (var i = 0; i < children.length; i++) {
+                            if (typeof except != 'undefined' && except.indexOf(children[i].id) !== -1) {
+                                _.where($scope.allSelectables, {
+                                    id: except[except.indexOf(children[i].id)]
+                                })[0].selected = true;
+                                $scope.selectedData.push(_.where($scope.allSelectables, {
+                                    id: except[except.indexOf(children[i].id)]
+                                })[0]);
                                 continue;
                             }
-                            _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
-                            _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = false;
+                            _.where($scope.allSelectables, {
+                                id: children[i].id
+                            })[0].selecting = false;
+                            _.where($scope.allSelectables, {
+                                id: children[i].id
+                            })[0].selected = false;
                         }
                     };
 
                     self.selectAll = $scope.selectAll = function() {
                         var children = $scope.allSelectables;
                         var selected = [];
-                        if(children.length) {
-                            for(var i = 0; i < children.length; i++) {
-                                _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
-                                _.where($scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = true;
-                                selected.push(_.where($scope.allSelectables, {id: children[i]["id"]})[0]);
+                        if (children.length) {
+                            for (var i = 0; i < children.length; i++) {
+                                _.where($scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selecting = false;
+                                _.where($scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selected = true;
+                                selected.push(_.where($scope.allSelectables, {
+                                    id: children[i].id
+                                })[0]);
                             }
 
                             $scope.selectedData = selected;
@@ -283,7 +302,7 @@ angular.module('multipleSelection', [])
 
                     self.isElemVisible = $scope.isElemVisible = function(elem) {
                         var isVisible = true;
-                        if(elem.prop('offsetWidth') <= 0 ||
+                        if (elem.prop('offsetWidth') <= 0 ||
                             elem.prop('offsetHeight') <= 0 ||
                             (offset(elem[0]).left + elem.prop('offsetWidth')) < 0 ||
                             (offset(elem[0]).top + elem.prop('offsetHeight')) < 0 || !elem.is(':visible') ||
@@ -295,35 +314,35 @@ angular.module('multipleSelection', [])
                     };
 
                     self.remove = $scope.remove = function(item) {
-                        $scope.allSelectables = _.reject($scope.allSelectables, {id: item.id});
+                        $scope.allSelectables = _.reject($scope.allSelectables, {
+                            id: item.id
+                        });
                     };
 
-                    self.onLinkEvtTrigger = $scope.onLinkEvtTrigger = function(event) {
-                    }
+                    self.onLinkEvtTrigger = $scope.onLinkEvtTrigger = function(event) {};
                 }
             },
             link: function(scope, element, attrs, ctrl) {
-                if(scope.multipleSelectionZone === 'false' || scope.multipleSelectionZone === false) {
-                } else {
+                if (scope.multipleSelectionZone === 'false' || scope.multipleSelectionZone === false) {} else {
                     activateLink();
                 }
 
                 function activateLink() {
                     scope.isSelectableZone = true;
                     scope.selectionZoneOffset = offset(element[0]);
-                    if(typeof attrs["continuousSelection"] !== 'undefined') {
+                    if (typeof attrs.continuousSelection !== 'undefined') {
                         ctrl.continuousSelection = scope.continuousSelection = true;
                     }
 
-                    if(attrs["selectingClass"] && typeof attrs["selectingClass"] === 'string') {
-                        ctrl.selectingClass = scope.selectingClass = attrs["selectingClass"];
+                    if (attrs.selectingClass && typeof attrs.selectingClass === 'string') {
+                        ctrl.selectingClass = scope.selectingClass = attrs.selectingClass;
                     }
 
-                    if(attrs["selectedClass"] && typeof attrs["selectedClass"] === 'string') {
-                        ctrl.selectedClass = scope.selectedClass = attrs["selectedClass"];
+                    if (attrs.selectedClass && typeof attrs.selectedClass === 'string') {
+                        ctrl.selectedClass = scope.selectedClass = attrs.selectedClass;
                     }
 
-                    if(typeof attrs["enableItemDragSelection"] !== 'undefined') {
+                    if (typeof attrs.enableItemDragSelection !== 'undefined') {
                         ctrl.enableItemDragSelection = scope.enableItemDragSelection = true;
                     }
 
@@ -335,20 +354,26 @@ angular.module('multipleSelection', [])
                         return scope.selectedData;
                     }, function() {
                         _.each(scope.allSelectables, function(selData) {
-                           // var selUri = selData.uri;
-                            var selObj = _.where(scope.selectedData, {id: selData.id});
+                            // var selUri = selData.uri;
+                            var selObj = _.where(scope.selectedData, {
+                                id: selData.id
+                            });
                             selData.selected = selObj && selObj.length;
                         });
 
-                        $timeout(function() {
-                            scope.$emit("MULTISEL_UPDATED", scope.selectedData);
-                        });
+                        if (scope.selectedData || scope.selectedData.length > 0) {
+                            $timeout(function() {
+                                scope.$emit("MULTISEL_UPDATED", scope.selectedData);
+                            });
+                        }
                     });
 
                     scope.$on('MULTISEL_SELECT_ALL', scope.selectAll);
                     scope.$on('MULTISEL_SELECT_NONE', scope.deselectAll);
                     scope.$on('MULTISEL_UPDATE', function(evt, itemUri) {
-                        var itemId = _.where(scope.allSelectables, {uri: itemUri})[0].id;
+                        var itemId = _.where(scope.allSelectables, {
+                            uri: itemUri
+                        })[0].id;
 
                         scope.deselectAll(itemId);
                     });
@@ -365,7 +390,7 @@ angular.module('multipleSelection', [])
                      */
                     function checkElementHitting(box1, box2) {
                         return (box2.beginX <= box1.beginX && box1.beginX <= box2.endX || box1.beginX <= box2.beginX && box2.beginX <= box1.endX) &&
-                        (box2.beginY <= box1.beginY && box1.beginY <= box2.endY || box1.beginY <= box2.beginY && box2.beginY <= box1.endY);
+                            (box2.beginY <= box1.beginY && box1.beginY <= box2.endY || box1.beginY <= box2.beginY && box2.beginY <= box1.endY);
                     }
 
                     /**
@@ -382,14 +407,14 @@ angular.module('multipleSelection', [])
 
                         var result = {};
 
-                        if(startX > endX) {
+                        if (startX > endX) {
                             result.beginX = endX;
                             result.endX = startX;
                         } else {
                             result.beginX = startX;
                             result.endX = endX;
                         }
-                        if(startY > endY) {
+                        if (startY > endY) {
                             result.beginY = endY;
                             result.endY = startY;
                         } else {
@@ -441,7 +466,7 @@ angular.module('multipleSelection', [])
                         function hitsAnyElement(childElements) {
                             var hitting = 0;
                             _.each(childElements, function(childElem) {
-                                if(scope.isElemVisible(childElem) && checkElementHitting(
+                                if (scope.isElemVisible(childElem) && checkElementHitting(
                                         transformBox(
                                             offset(childElem[0]).left,
                                             offset(childElem[0]).top,
@@ -460,14 +485,22 @@ angular.module('multipleSelection', [])
                         // Check items is selecting
                         //var children = getSelectableElements(element);
                         var children = scope.allSelectables;
-                        for(var i = 0; i < children.length; i++) {
-                            var childData = _.where(scope.allSelectables, {id: children[i]["id"]});
+                        for (var i = 0; i < children.length; i++) {
+                            var childData = _.where(scope.allSelectables, {
+                                id: children[i].id
+                            });
 
-                            if(hitsAnyElement(children[i].element)) {
-                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = true;
+                            if (hitsAnyElement(children[i].element)) {
+                                _.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selecting = true;
                             } else {
-                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = false;
-                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
+                                _.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selected = false;
+                                _.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selecting = false;
                             }
                         }
 
@@ -487,14 +520,24 @@ angular.module('multipleSelection', [])
                         //var children = getSelectableElements(element);
                         var children = scope.allSelectables;
 
-                        for(var i = 0; i < children.length; i++) {
-                            var childData = _.where(scope.allSelectables, {id: children[i]["id"]});
-                            if(_.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] === true) {
-                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selecting"] = false;
+                        for (var i = 0; i < children.length; i++) {
+                            var childData = _.where(scope.allSelectables, {
+                                id: children[i].id
+                            });
+                            if (_.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selecting === true) {
+                                _.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selecting = false;
 
-                                _.where(scope.allSelectables, {id: children[i]["id"]})[0]["selected"] = event.ctrlKey ? !childData["selected"] : true;
+                                _.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0].selected = event.ctrlKey ? !childData.selected : true;
 
-                                scope.updateSelectedData(_.where(scope.allSelectables, {id: children[i]["id"]})[0]);
+                                scope.updateSelectedData(_.where(scope.allSelectables, {
+                                    id: children[i].id
+                                })[0]);
                             } else {
                                 /*if (!scope.msService.continuousSelection && checkElementHitting(transformBox(children[i].prop('offsetLeft'), children[i].prop('offsetTop'), children[i].prop('offsetLeft') + children[i].prop('offsetWidth'), children[i].prop('offsetTop') + children[i].prop('offsetHeight')), transformBox(event.pageX, event.pageY, event.pageX, event.pageY))) {
                                  if (children[i].scope().isSelected === false) {
@@ -506,7 +549,7 @@ angular.module('multipleSelection', [])
                             ctrl.isDragSelection = false;
                         }
 
-                        if(ctrl.childItemClicked) {
+                        if (ctrl.childItemClicked) {
                             ctrl.childItemClicked = false;
                         }
 
@@ -521,7 +564,7 @@ angular.module('multipleSelection', [])
                         ctrl.isDragSelection = true;
 
                         // Deslect all the selected items
-                        if((!scope.enableItemDragSelection && !event.ctrlKey) || (scope.enableItemDragSelection && !ctrl.childItemClicked && !event.ctrlKey)) {
+                        if ((!scope.enableItemDragSelection && !event.ctrlKey) || (scope.enableItemDragSelection && !ctrl.childItemClicked && !event.ctrlKey)) {
                             scope.deselectAll();
                         }
 
@@ -531,7 +574,7 @@ angular.module('multipleSelection', [])
 
                         // Create helper
                         helper = angular.element(".select-helper");
-                        if(!helper.length) {
+                        if (!helper.length) {
                             helper = angular
                                 .element("<div></div>")
                                 .addClass('select-helper');
