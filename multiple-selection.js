@@ -420,7 +420,7 @@ angular.module('multipleSelection', [])
                     scope.$watchCollection(function() {
                         return scope.selectedData;
                     }, function(newVal, oldVal) {
-                        if(!angular.equals(newVal, oldVal)){
+                        if (!angular.equals(newVal, oldVal)) {
                             _.each(scope.allSelectables, function(selData) {
                                 // var selUri = selData.uri;
                                 var selObj = _.where(scope.selectedData, {
@@ -440,9 +440,16 @@ angular.module('multipleSelection', [])
                     scope.$on('MULTISEL_SELECT_ALL', scope.selectAll);
                     scope.$on('MULTISEL_SELECT_NONE', scope.deselectAll);
                     scope.$on('MULTISEL_UPDATE', function(evt, itemUri) {
-                        var itemId = _.where(scope.allSelectables, {
-                            uri: itemUri
-                        })[0].id;
+                        var itemId = null;
+                        if (Array.isArray(itemUri)) {
+                            itemId = scope.allSelectables.filter(function(selectable) {
+                                return itemUri.indexOf(selectable.uri) > -1;
+                            });
+                        } else {
+                            itemId = _.where(scope.allSelectables, {
+                                uri: itemUri
+                            })[0].id;
+                        }
 
                         scope.deselectAll(itemId);
                     });
