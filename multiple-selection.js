@@ -420,7 +420,7 @@ angular.module('multipleSelection', [])
                     scope.$watchCollection(function() {
                         return scope.selectedData;
                     }, function(newVal, oldVal) {
-                        if(!angular.equals(newVal, oldVal) && newVal.length != oldVal.length){
+                        if(!angular.equals(newVal, oldVal)){
                             _.each(scope.allSelectables, function(selData) {
                                 // var selUri = selData.uri;
                                 var selObj = _.where(scope.selectedData, {
@@ -429,7 +429,7 @@ angular.module('multipleSelection', [])
                                 selData.selected = selObj && selObj.length;
                             });
 
-                            if (!scope.selectionEvtEmitDisabled && scope.selectedData && scope.selectedData.length) {
+                            if (!scope.selectionEvtEmitDisabled && scope.selectedData) {
                                 $timeout(function() {
                                     scope.$emit("MULTISEL_UPDATED", scope.selectedData);
                                 });
