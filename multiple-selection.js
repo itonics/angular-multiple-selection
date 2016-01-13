@@ -194,30 +194,51 @@ angular.module('multipleSelection', [])
                     self.selectedClass = $scope.selectedClass = "";
                     // this variable enables continuous selection of the items without pressing 'ctrl' key
                     self.continuousSelection = $scope.continuousSelection = false;
-                    // this variable enables drag selection of the items via directly dragging over an item which is by default disabled
+                    // this variable enables drag selection of the items via directly clicking and dragging over an item which is by default disabled
                     self.enableItemDragSelection = $scope.enableItemDragSelection = false;
                     self.isDragSelection = false;
                     self.childItemClicked = false;
+                    self.selectionEvtEmitDisabled = $scope.selectionEvtEmitDisabled = false;
 
+                    /**
+                     * Selects a particular item in $scope.allSelectables array
+                     * @param: {Number || String} id of the item
+                     */
                     self.selectItem = $scope.selectItem = function(itemId) {
                         _.where($scope.allSelectables, {
                             id: itemId
                         })[0].selected = false;
                     };
 
+                    /**
+                     * Provides all selectable items array i.e. $scope.allSelectables
+                     * @return: {array}
+                     */
                     self.getAllSelectables = $scope.getAllSelectables = function() {
                         return $scope.allSelectables;
                     };
 
+                    /**
+                     * Provides an array of selected items data i.e. $scope.selectedData
+                     * @return {array}
+                     */
                     self.getSelectedData = $scope.getSelectedData = function() {
                         return $scope.selectedData;
                     };
 
+                    /**
+                     * Updates selectedData array by assigning a new array
+                     *
+                     */
                     self.setSelectedData = $scope.setSelectedData = function(selData) {
-                        selData = typeof selData === 'undefined' ? [] : selData;
-                        $scope.selectedData = selData;
+                        $scope.selectedData = typeof selData === 'undefined' ? [] : selData;
                     };
 
+                    /**
+                     * Updates selectedData array by providing id of a particular item
+                     * if the item exists in the array i.e. the item is selected then removes the item form the array
+                     * if the items doesn't exist in the array then pushes the item to the array
+                     */
                     self.updateSelectedData = $scope.updateSelectedData = function(item) {
                         var exist = false;
                         var index = null;
@@ -238,6 +259,9 @@ angular.module('multipleSelection', [])
                         $scope.selectedData = selData;
                     };
 
+                    /**
+                     *
+                     */
                     self.setAllSelected = $scope.setAllSelected = function() {
                         var selected = [];
                         var children = $scope.allSelectables;
@@ -253,10 +277,20 @@ angular.module('multipleSelection', [])
                         $scope.selectedData = selected;
                     };
 
+                    /**
+                     * updates $scope.allSelectables array by pushing selectable items
+                     *
+                     */
                     self.populate = $scope.populate = function(item) {
                         $scope.allSelectables.push(item);
                     };
 
+                    /**
+                     * updates the selection state of the all the items in the $scope.allSelectables array to false i.e. deselected
+                     * sets the selection state of the provided item (id) or multiple items (array of ids) to true i.e. selected
+                     * @param: {string || array}
+                     *
+                     */
                     self.deselectAll = $scope.deselectAll = function(except) {
                         except = !Array.isArray(except) ? [except] : except;
                         var children = $scope.allSelectables;
@@ -280,6 +314,10 @@ angular.module('multipleSelection', [])
                         }
                     };
 
+                    /**
+                     * sets the selection state of all the items in $scope.allSelectables to true i.e. selected
+                     *
+                     */
                     self.selectAll = $scope.selectAll = function() {
                         var children = $scope.allSelectables;
                         var selected = [];
@@ -300,6 +338,10 @@ angular.module('multipleSelection', [])
                         }
                     };
 
+                    /**
+                     * checks if the provided item is visible in the viewport
+                     * @param: {(DOM)Object}
+                     */
                     self.isElemVisible = $scope.isElemVisible = function(elem) {
                         var isVisible = true;
                         if (elem.prop('offsetWidth') <= 0 ||
@@ -313,6 +355,10 @@ angular.module('multipleSelection', [])
                         return isVisible;
                     };
 
+                    /**
+                     * removes an item from $scope.allSelectables array
+                     * @param: {Object}
+                     */
                     self.remove = $scope.remove = function(item) {
                         $scope.allSelectables = _.reject($scope.allSelectables, {
                             id: item.id
@@ -330,6 +376,10 @@ angular.module('multipleSelection', [])
                 function activateLink() {
                     scope.isSelectableZone = true;
                     scope.selectionZoneOffset = offset(element[0]);
+                    /**
+                     * if true, multiple items can be selected by continuously clicking on them
+                     * (without holding Ctrl key)
+                     */
                     if (typeof attrs.continuousSelection !== 'undefined') {
                         ctrl.continuousSelection = scope.continuousSelection = true;
                     }
@@ -342,29 +392,48 @@ angular.module('multipleSelection', [])
                         ctrl.selectedClass = scope.selectedClass = attrs.selectedClass;
                     }
 
+                    /**
+                     * if true, the items can be selected by directly clicking and dragging over them
+                     *
+                     */
                     if (typeof attrs.enableItemDragSelection !== 'undefined') {
                         ctrl.enableItemDragSelection = scope.enableItemDragSelection = true;
+                    }
+
+                    /**
+                     * if true, "MULTISEL_UPDATED" event doesn't get emitted even if scope.selectedData is updated
+                     *
+                     */
+                    if (typeof attrs.disableSelectionEvtEmit !== 'undefined' && attrs.disableSelectionEvtEmit !== 'false') {
+                        ctrl.selectionEvtEmitDisabled = scope.selectionEvtEmitDisabled = true;
                     }
 
                     var startX = 0,
                         startY = 0;
                     var helper;
 
+
+                    /**
+                     * Watches selectedData array and updates selection state of the items in the array
+                     * as well as emits "MULTISEL_UPDATED" event in case selectionData has been updated
+                     */
                     scope.$watchCollection(function() {
                         return scope.selectedData;
-                    }, function() {
-                        _.each(scope.allSelectables, function(selData) {
-                            // var selUri = selData.uri;
-                            var selObj = _.where(scope.selectedData, {
-                                id: selData.id
+                    }, function(newVal, oldVal) {
+                        if(!angular.equals(newVal, oldVal) && newVal.length != oldVal.length){
+                            _.each(scope.allSelectables, function(selData) {
+                                // var selUri = selData.uri;
+                                var selObj = _.where(scope.selectedData, {
+                                    id: selData.id
+                                });
+                                selData.selected = selObj && selObj.length;
                             });
-                            selData.selected = selObj && selObj.length;
-                        });
 
-                        if (scope.selectedData && scope.selectedData.length > 0) {
-                            $timeout(function() {
-                                scope.$emit("MULTISEL_UPDATED", scope.selectedData);
-                            });
+                            if (!scope.selectionEvtEmitDisabled && scope.selectedData && scope.selectedData.length) {
+                                $timeout(function() {
+                                    scope.$emit("MULTISEL_UPDATED", scope.selectedData);
+                                });
+                            }
                         }
                     });
 
