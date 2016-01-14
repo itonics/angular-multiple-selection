@@ -445,6 +445,9 @@ angular.module('multipleSelection', [])
                             itemId = scope.allSelectables.filter(function(selectable) {
                                 return itemUri.indexOf(selectable.uri) > -1;
                             });
+                            for(var i = 0; i < itemId.length; i++){
+                                itemId[i] = itemId[i].id;
+                            }
                         } else {
                             itemId = _.where(scope.allSelectables, {
                                 uri: itemUri
